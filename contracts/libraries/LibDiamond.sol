@@ -33,6 +33,8 @@ library LibDiamond {
         bytes4[] functionSelectors;
         uint256 facetAddressPosition; // position of facetAddress in facetAddresses array
     }
+
+
     enum LoanStatus{
         None,
         Active,
@@ -62,13 +64,17 @@ library LibDiamond {
         // owner of the contract
         address contractOwner;
         /*==================== NFT Collateralized Loan ====================*/
+        // ERC20 token address
+        address tokenAddress;
+
+        uint256 minLoanAmount;
+        uint256 maxLoanAmount;
+        uint256 interestRateBps;
+        bool isInitialized;
         mapping(uint256 => Loan) loans;
         uint256 loanCounter;
         mapping(address => uint256[]) borrowerLoans;
-
-        // ERC20 token address
-        address tokenAddress;
-        
+        mapping(address => bool) allowedNFTs;
     }
 
     function diamondStorage()

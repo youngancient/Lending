@@ -11,6 +11,11 @@ library Errors {
     error LoanIsNotActive();
     error LoanDurationNotExpired();
     error LoanAlreadyRepaid();
+    error LoanAmountExceedsMax();
+    error LoanAmountBelowMin();
+    error ContractNotInitialized();
+    error InterestRateCannotBeZero();
+    error NFTNotSupported();
 }
 
 library Events {

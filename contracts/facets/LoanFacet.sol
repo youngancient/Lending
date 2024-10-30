@@ -6,7 +6,17 @@ import {IERC20} from "../interfaces/IERC20.sol";
 import {IERC721} from "../interfaces/IERC721.sol";
 
 contract LoanFacet {
-    // how to calculate the correct pricing using Oracles
+    function initialize(address[] memory allowedNFTs, address daiTokenContract) external{
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+        ds.maxLoanAmount = 5000e18;
+        ds.minLoanAmount = 100e18;
+        ds.isInitialized = true;
+        ds.interestRateBps = 1000; // 10%
+        ds.tokenAddress = daiTokenContract;
+        for(uint256 i = 0; i < allowedNFTs.length; i++){
+            ds.allowedNFTs[allowedNFTs[i]] = true;
+        }
+    }
     function getLoan(
         uint256 _nftId,
         address _nftAddress,
@@ -14,11 +24,23 @@ contract LoanFacet {
         uint256 _time
     ) external {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+        if(!ds.isInitialized){
+            revert Errors.ContractNotInitialized();
+        }
         if (_loanAmount <= 0) {
             revert Errors.LoanCannotBeZero();
         }
         if (_time <= 0) {
             revert Errors.LoanDurationCannotBeZero();
+        }
+        if (_loanAmount > ds.maxLoanAmount) {
+            revert Errors.LoanAmountExceedsMax();
+        }
+        if (_loanAmount < ds.minLoanAmount) {
+            revert Errors.LoanAmountBelowMin();
+        }
+        if(!ds.allowedNFTs[_nftAddress]){
+            revert Errors.NFTNotSupported();
         }
 
         IERC721 nft = IERC721(_nftAddress);
@@ -86,7 +108,8 @@ contract LoanFacet {
 
         IERC20 token = IERC20(ds.tokenAddress);
 
-        uint256 interest = loan.loanAmount; // 10% interest (adjust this later)
+        uint256 interest = (loan.loanAmount * ds.interestRateBps) / 10000; // 10% interest (adjust this later)
+
         token.transferFrom(loan.borrower, address(this), loan.loanAmount + interest);
 
         loan.loanStatus = LibDiamond.LoanStatus.Repaid;
@@ -121,5 +144,24 @@ contract LoanFacet {
     ) external view returns (LibDiamond.Loan memory) {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
         return ds.loans[_nftId];
+    }
+
+    function adjustLoanInterest(uint256 _newInterestRateBps) external{
+        LibDiamond.enforceIsContractOwner();
+        if(_newInterestRateBps == 0){
+            revert Errors.InterestRateCannotBeZero();
+        }
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+        ds.interestRateBps = _newInterestRateBps; 
+    }
+
+    function getLoanDetails() external view returns(uint256 maxLoanAmount, uint256 minLoanAmount, uint256 interestRateBps){
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+        return (ds.maxLoanAmount, ds.minLoanAmount, ds.interestRateBps);
+    }
+
+    function getTokenDetails() external view returns(address tokenAddress){
+        LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
+        return (ds.tokenAddress);
     }
 }
