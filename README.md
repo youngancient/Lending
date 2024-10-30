@@ -1,7 +1,9 @@
-[![Mentioned in Awesome Foundry](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/crisgarner/awesome-foundry)
-# Foundry + Hardhat Diamonds
+# NFT Collateralized lending protocol
 
-This is a mimimal template for [Diamonds](https://github.com/ethereum/EIPs/issues/2535) which allows facet selectors to be generated on the go in solidity tests!
+This protocol uses a Peer-to-Protocol architecture
+
+![Screenshot from 2024-10-30 01-06-32](https://github.com/user-attachments/assets/1efe8e0e-cf0d-40db-a496-e4116ee66561)
+
 
 ## Installation
 
