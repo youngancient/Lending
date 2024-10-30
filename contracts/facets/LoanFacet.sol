@@ -87,7 +87,7 @@ contract LoanFacet {
 
         LibDiamond.Loan memory loan = ds.loans[_loanId];
 
-        if (loan.borrower != address(0)) {
+        if (loan.borrower == address(0)) {
             revert Errors.LoanDoesNotExist();
         }
 
@@ -95,7 +95,7 @@ contract LoanFacet {
             revert Errors.InvalidSender();
         }
 
-        if (loan.loanStatus == LibDiamond.LoanStatus.Active) {
+        if (loan.loanStatus != LibDiamond.LoanStatus.Active) {
             revert Errors.LoanIsNotActive();
         }
 
@@ -104,7 +104,7 @@ contract LoanFacet {
         }
 
 
-        if (loan.loanDuration > block.timestamp) {
+        if (loan.loanDuration < block.timestamp) {
             revert Errors.LoanDurationNotExpired();
         }
 

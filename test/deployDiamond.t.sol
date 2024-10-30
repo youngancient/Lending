@@ -119,6 +119,7 @@ contract DiamondDeployer is DiamondUtils, IDiamondCut {
         nft.approve(address(diamond), validNftId);
 
         LoanFacet(address(diamond)).initiateLoan(validNftId, address(nft), 1000e18, 60 * 60 * 1);
+
         assertEq(nft.ownerOf(validNftId), address(diamond));
 
         uint256 loanId = 0;
@@ -129,9 +130,32 @@ contract DiamondDeployer is DiamondUtils, IDiamondCut {
         assertEq(loan.nftAddress, address(nft));
         assertEq(token.balanceOf(borrower),loan.loanAmount);
 
+        vm.expectRevert();
+        LoanFacet(address(diamond)).initiateLoan(validNftId, address(nft), 1000e18, 60 * 60 * 1);
         /*==================== Test Repayment ====================*/
-        
 
+        // cannot repay until loanDuration is exceeded
+        vm.expectRevert();
+        LoanFacet(address(diamond)).repayLoan(loanId);
+        vm.stopPrank();
+
+        uint256 interest = (loan.loanAmount * 1000) / 10000;
+        // send borrower the added interest so he can py
+        vm.prank(trustFund);
+        token.transfer(borrower, interest);
+
+        // advance time
+        vm.warp(60 * 60 * 1);
+        vm.startPrank(borrower);
+        token.approve(address(diamond),interest + loan.loanAmount);
+        LoanFacet(address(diamond)).repayLoan(loanId);
+
+        loan = LoanFacet(address(diamond)).getLoan(loanId);
+
+        // assertEq(loan.loanStatus, 2);
+        assertEq(token.balanceOf(borrower), 0);
+        assertEq(token.balanceOf(address(diamond)), 20000e18 + interest);
+        assertEq(nft.ownerOf(validNftId), borrower);
     }
 
     function diamondCut(
