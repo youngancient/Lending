@@ -71,7 +71,7 @@ contract LoanFacet {
             revert Errors.InsufficientBalance();
         }
 
-        token.transferFrom(msg.sender, address(this), _loanAmount);
+        token.transfer(msg.sender, _loanAmount);
         emit Events.LoanSentSuccessfully(
             msg.sender,
             _id,
