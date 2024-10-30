@@ -108,8 +108,9 @@ contract DiamondDeployer is DiamondUtils, IDiamondCut {
             LoanFacet(address(diamond)).getTokenDetails(),
             daiTokenContract
         );
-        assertEq(token.balanceOf(address(diamond)), 20000e18);
 
+        assertEq(token.balanceOf(address(diamond)), 20000e18);
+        assertEq(token.balanceOf(borrower), 0);
         /*==================== Test Borrowing ====================*/
         uint256 validNftId = 51;
 
@@ -123,7 +124,14 @@ contract DiamondDeployer is DiamondUtils, IDiamondCut {
         uint256 loanId = 0;
         LibDiamond.Loan memory loan = LoanFacet(address(diamond)).getLoan(loanId);
         assertEq(loan.borrower, borrower);
+        assertEq(loan.loanAmount, 1000e18);
+        assertEq(loan.loanDuration, block.timestamp + 60 * 60 * 1);
+        assertEq(loan.nftAddress, address(nft));
+        assertEq(token.balanceOf(borrower),loan.loanAmount);
+
         /*==================== Test Repayment ====================*/
+        
+
     }
 
     function diamondCut(
