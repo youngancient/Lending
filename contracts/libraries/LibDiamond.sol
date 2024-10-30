@@ -71,6 +71,7 @@ library LibDiamond {
         uint256 maxLoanAmount;
         uint256 interestRateBps;
         bool isInitialized;
+        // loanId => loan
         mapping(uint256 => Loan) loans;
         uint256 loanCounter;
         mapping(address => uint256[]) borrowerLoans;

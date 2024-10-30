@@ -21,8 +21,9 @@ library Errors {
 library Events {
     event LoanSentSuccessfully(
         address indexed _borrower,
-        uint256 indexed _nftId,
+        uint256 indexed _loanId,
         address indexed _nftAddress,
+        uint256 _nftId,
         uint256 _loanAmount,
         uint256 _loanDuration
     );

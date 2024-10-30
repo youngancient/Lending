@@ -17,7 +17,7 @@ contract LoanFacet {
             ds.allowedNFTs[allowedNFTs[i]] = true;
         }
     }
-    function getLoan(
+    function initiateLoan(
         uint256 _nftId,
         address _nftAddress,
         uint256 _loanAmount,
@@ -43,6 +43,7 @@ contract LoanFacet {
             revert Errors.NFTNotSupported();
         }
 
+        uint256 _id = ds.loanCounter;
         IERC721 nft = IERC721(_nftAddress);
         if (nft.ownerOf(_nftId) != msg.sender) {
             revert Errors.LoanNFTNotOwned();
@@ -52,7 +53,7 @@ contract LoanFacet {
 
         uint256 duration = block.timestamp + _time;
 
-        ds.loans[_nftId] = LibDiamond.Loan({
+        ds.loans[_id] = LibDiamond.Loan({
             nftAddress: _nftAddress,
             loanAmount: _loanAmount,
             loanDuration: duration,
@@ -62,7 +63,7 @@ contract LoanFacet {
             tokenId: _nftId
         });
 
-        ++ds.loanCounter;
+        ds.loanCounter = _id + 1;
         ds.borrowerLoans[msg.sender].push(_nftId);
 
         IERC20 token = IERC20(ds.tokenAddress);
@@ -73,8 +74,9 @@ contract LoanFacet {
         token.transferFrom(msg.sender, address(this), _loanAmount);
         emit Events.LoanSentSuccessfully(
             msg.sender,
-            _nftId,
+            _id,
             _nftAddress,
+            _nftId,
             _loanAmount,
             duration
         );
@@ -140,10 +142,10 @@ contract LoanFacet {
     }
 
     function getLoan(
-        uint256 _nftId
+        uint256 _id
     ) external view returns (LibDiamond.Loan memory) {
         LibDiamond.DiamondStorage storage ds = LibDiamond.diamondStorage();
-        return ds.loans[_nftId];
+        return ds.loans[_id];
     }
 
     function adjustLoanInterest(uint256 _newInterestRateBps) external{

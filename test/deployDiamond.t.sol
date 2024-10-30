@@ -82,7 +82,7 @@ contract DiamondDeployer is DiamondUtils, IDiamondCut {
         // set some tokens to be lent
 
         vm.prank(trustFund);
-        token.transfer(address(diamond),20000e18 );
+        token.transfer(address(diamond), 20000e18);
     }
 
     function testLoan() public {
@@ -107,10 +107,20 @@ contract DiamondDeployer is DiamondUtils, IDiamondCut {
             LoanFacet(address(diamond)).getTokenDetails(),
             daiTokenContract
         );
-        assertEq(token.balanceOf(address(diamond)),20000e18);
+        assertEq(token.balanceOf(address(diamond)), 20000e18);
 
         /*==================== Test Borrowing ====================*/
+        uint256 validNftId = 51;
 
+        vm.startPrank(borrower);
+        assertEq(nft.ownerOf(validNftId),borrower);
+        nft.approve(address(diamond), validNftId);
+        
+        LoanFacet(address(diamond)).initiateLoan(validNftId, address(nft), 1000e18, 60 * 60 * 1);
+        assertEq(nft.ownerOf(validNftId), address(diamond));
+
+        LibDiamond.Loan memory loan = LoanFacet(address(diamond)).getLoan(validNftId);
+        assertEq(loan.borrower, borrower);
         /*==================== Test Repayment ====================*/
     }
 
