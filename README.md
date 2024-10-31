@@ -4,6 +4,8 @@ This protocol uses a Peer-to-Protocol architecture
 
 ![Screenshot from 2024-10-30 01-06-32](https://github.com/user-attachments/assets/1efe8e0e-cf0d-40db-a496-e4116ee66561)
 
+## Flowchart
+![flow drawio](https://github.com/user-attachments/assets/e68a8ca3-ebd9-42de-9c67-b68d6183767f)
 
 ## Installation
 
